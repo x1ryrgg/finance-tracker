@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+</head>
+<body>
+    <h2>{{ title }} | {{ user.username }} | <a href="{% url 'logout' %}"> Выйти из аккаунта</a></h2>
+
+    <h2><a href="{% url 'object' %}"> Ваши цели </a></h2>
+
+    <ul>
+        {% for i in users %}
+            <li>
+                <div> {{ i.username }} </div>
+                <div> {{ i.email }}</div>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
