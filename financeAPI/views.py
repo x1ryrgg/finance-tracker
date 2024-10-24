@@ -9,6 +9,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView
 from rest_framework import status
 from rest_framework.decorators import permission_classes
+from rest_framework.generics import ListCreateAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -20,7 +21,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .forms import *
 from financeAPI.models import *
-from .serializers import ObjectSerializer
+from .serializers import ObjectSerializer, ProfileSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -44,17 +45,17 @@ def show_errors(request, form) -> None:
             logger.warning("Got an invalid %s form: %s", form.__class__.__name__, message)
 
 
+class ProfileAPI(APIView):
+    permission_classes = [IsAuthenticated,]
 
-class Profile(LoginRequiredMixin, ListView):
-    model = User
-    template_name = 'financeAPI/index.html'
-    context_object_name = 'users'
-    paginate_by = 10
-    permission_classes = [IsAuthenticated]
+    @staticmethod
+    def get(request):
+        user = request.user
+        serializer = ProfileSerializer(Profile.objects.filter(name=user), many=True, context={'request': request})
 
-    extra_context = {
-        'title': "Главная страница",
-    }
+        return render(request, 'financeAPI/index.html', {'user': user, 'serializer': serializer.data,
+                                                         'title': 'Главное меню', })
+
 
 class LoginAPI(APIView):
     @staticmethod

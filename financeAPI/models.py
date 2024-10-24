@@ -12,7 +12,7 @@ class User(AbstractUser):
 
 
 class Profile(models.Model):
-    name = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, verbose_name="Ник")
+    name = models.OneToOneField('User', on_delete=models.CASCADE, verbose_name="Ник")
     all_money = models.FloatField(max_length=1000000000000, blank=True, default=0, verbose_name="Баланс")
     text = models.TextField(blank=True, default="Пусто", verbose_name="Пожелания")
     obj = models.ForeignKey('Objective', on_delete=models.CASCADE, default='Нет целей',
@@ -24,7 +24,7 @@ class Profile(models.Model):
 
 
 class Objective(models.Model):
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, default=None ,verbose_name="Пользователь")
+    user = models.ForeignKey("User", on_delete=models.CASCADE, default=None ,verbose_name="Пользователь")
     object = models.CharField(max_length=100, db_index=True, verbose_name="Название цели")
     obj_money = models.FloatField(max_length=1000000000000, default=0, verbose_name='Сумма для цели', db_index=True)
     slug = models.SlugField(max_length=255, unique=True, db_index=True, blank=False)

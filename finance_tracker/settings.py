@@ -42,8 +42,7 @@ INSTALLED_APPS = [
     'financeAPI',
     'rest_framework',
     'rest_framework.authtoken',
-
-
+    'social_django', # google
 ]
 
 MIDDLEWARE = [
@@ -54,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware', # google
 ]
 
 ROOT_URLCONF = 'finance_tracker.urls'
@@ -216,3 +216,23 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SERVER_EMAIL = EMAIL_HOST_USER
 EMAIL_ADMIN = EMAIL_HOST_USER
 ###
+
+# URL-адреса для редиректа
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+# Настройки для Google OAuth2
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '1021513889114-or08g7ouu6r4b7955j8qd408m1f39mki.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+]
+
+AUTHENTICATION_BACKENDS = (
+       'social_core.backends.google.GoogleOAuth2',
+       'django.contrib.auth.backends.ModelBackend',
+   )
+

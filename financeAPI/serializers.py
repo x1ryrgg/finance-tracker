@@ -9,3 +9,10 @@ class ObjectSerializer(serializers.ModelSerializer):
         read_only_fields = ['time_create', 'time_update']
 
 
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = "__all__"
+
+
+

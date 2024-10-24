@@ -11,10 +11,11 @@
     <h2><a href="{% url 'object' %}"> Ваши цели </a></h2>
 
     <ul>
-        {% for i in users %}
+        {% for i in serializer %}
             <li>
-                <div> {{ i.username }} </div>
-                <div> {{ i.email }}</div>
+                <div> {{ i.name }} </div>
+                <div> {{ i.all_money }}</div>
+                <div> {{ i.text }}</div>
             </li>
         {% endfor %}
     </ul>

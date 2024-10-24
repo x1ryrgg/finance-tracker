@@ -9,7 +9,8 @@ from .views import *
 
 urlpatterns = [
     path('', index, name='index'),
-    path('profile/', Profile.as_view(), name='profile'),
+    path('social-auth/', include('social_django.urls', namespace='social')),
+    path('profile/', ProfileAPI.as_view(), name='profile'),
     path('objects/', ObjectList.as_view(), name='object'),
     path('crt_object', ObjectCreate.as_view(), name='object_create'),
     path('crt_object/<slug:object_slug>/', ObjectUpdate.as_view(), name='object_update'),
