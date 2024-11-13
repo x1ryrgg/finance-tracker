@@ -1,0 +1,56 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    height: 100vh; /* Полная высота окна */
+    margin: 0; /* Убираем отступы */
+    display: flex; /* Используем flexbox */
+    justify-content: center; /* Центрируем по горизонтали */
+    align-items: center; /* Центрируем по вертикали */
+}
+
+.login-container {
+    background-color: white; /* Цвет фона формы */
+    border-radius: 8px; /* Скругленные углы */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Тень */
+    padding: 20px; /* Отступы внутри контейнера */
+    width: 300px; /* Ширина формы */
+}
+
+h1 {
+    text-align: center; /* Центрируем заголовок */
+    color: #333; /* Цвет текста */
+}
+
+.login-form {
+    display: flex; /* Используем flexbox */
+    flex-direction: column; /* Располагаем элементы в колонку */
+}
+
+label {
+    margin-bottom: 5px; /* Отступ снизу */
+    color: #555; /* Цвет текста метки */
+}
+
+input[type="text"],
+input[type='email'],
+input[type="password"] {
+    padding: 10px; /* Внутренние отступы */
+    margin-bottom: 15px; /* Отступ снизу */
+    border: 1px solid #ccc; /* Серая рамка */
+    border-radius: 4px; /* Скругление углов */
+    font-size: 16px; /* Размер шрифта */
+}
+
+button {
+    padding: 10px; /* Внутренние отступы */
+    background-color: #5cb85c; /* Цвет кнопки */
+    border: none; /* Без рамки */
+    border-radius: 4px; /* Скругление углов */
+    color: white; /* Цвет текста кнопки */
+    font-size: 16px; /* Размер шрифта */
+    cursor: pointer; /* Курсор при наведении */
+}
+
+button:hover {
+    background-color: #4cae4c; /* Цвет кнопки при наведении */
+}

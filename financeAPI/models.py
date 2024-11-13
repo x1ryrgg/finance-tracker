@@ -1,9 +1,12 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models.signals import post_delete, post_save
+from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.text import slugify
 from unidecode import unidecode
+import os
 
 
 class User(AbstractUser):
@@ -12,19 +15,35 @@ class User(AbstractUser):
 
 
 class Profile(models.Model):
-    name = models.OneToOneField('User', on_delete=models.CASCADE, verbose_name="Ник")
+    user = models.OneToOneField('User', on_delete=models.CASCADE, verbose_name="Ник", related_name="profile")
     all_money = models.FloatField(max_length=1000000000000, blank=True, default=0, verbose_name="Баланс")
     text = models.TextField(blank=True, default="Пусто", verbose_name="Пожелания")
-    obj = models.ForeignKey('Objective', on_delete=models.CASCADE, default='Нет целей',
-                                blank=True, verbose_name="Цели")
+    image = models.ImageField(upload_to='photo', verbose_name="Фото", blank=True, null=True)
     time_create = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
+    obj = models.ManyToManyField('Objective', blank=True, verbose_name="Цели", related_name="objs")
+
+    class Meta:
+        verbose_name = "Профиль"
+        verbose_name_plural = "Профили"
+
+        ordering = ['time_create']
 
     def __str__(self):
-        return f"{self.name} | {self.all_money}"
+        return f"{self.user} | {self.all_money}"
+
+
+"""
+функция для удаление фото из диска при удалении записи
+"""
+@receiver(post_delete, sender=Profile)
+def auto_delete_file_on_delete(sender, instance, **kwargs):
+    if instance.image:
+        if os.path.isfile(instance.image.path):
+            os.remove(instance.image.path)
 
 
 class Objective(models.Model):
-    user = models.ForeignKey("User", on_delete=models.CASCADE, default=None ,verbose_name="Пользователь")
+    user = models.ForeignKey("User", on_delete=models.CASCADE, verbose_name="Пользователь")
     object = models.CharField(max_length=100, db_index=True, verbose_name="Название цели")
     obj_money = models.FloatField(max_length=1000000000000, default=0, verbose_name='Сумма для цели', db_index=True)
     slug = models.SlugField(max_length=255, unique=True, db_index=True, blank=False)
@@ -32,18 +51,35 @@ class Objective(models.Model):
     time_update = models.DateTimeField(auto_now=True, verbose_name='Последнее обновление')
 
     class Meta:
+        verbose_name = "Цель"
+        verbose_name_plural = "Цели"
+
         ordering = ['id']
 
     def __str__(self):
         return f"{self.object} | {self.obj_money}"
-
-    def get_absolute_url(self):
-        return reverse('object_update', kwargs={'object_slug': self.slug})
 
     def save(self, *args, **kwargs):
         if not self.slug:
             transliterated_name = unidecode(self.object)
             self.slug = slugify(transliterated_name)
         return super(Objective, self).save(*args, **kwargs)
+
+
+"""
+функция срабатывает каждый раз, когда выполняется сохранение в модели Objective.
+sender - это отправитель, из какой модели идет сохранение.
+profile - экземпляр модели Profile связанный с пользователем который создал объект Objective.
+Далее в поле obj модели profile добавляется только что созданный объект Objective.
+Метод add для поля ManyToManyField позволяет добавлять один или несколько объектов, которые вы хотите связать с профилем.
+"""
+@receiver(post_save, sender=Objective)
+def add_objective_to_profile(sender, instance, created, **kwargs):
+    if created:
+        try:
+            profile = Profile.objects.get(user=instance.user)
+            profile.obj.add(instance)  # Добавляем только что созданный Objective в obj профиля
+        except Profile.DoesNotExist:
+            pass
 
 

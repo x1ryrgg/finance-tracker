@@ -11,10 +11,13 @@ urlpatterns = [
     path('', index, name='index'),
     path('social-auth/', include('social_django.urls', namespace='social')),
     path('profile/', ProfileAPI.as_view(), name='profile'),
-    path('objects/', ObjectList.as_view(), name='object'),
+    path('crt_profile/', ProfileCreate.as_view(), name='crt_profile'),
+    path('upd_profile/<str:username>/', ProfileUpdate.as_view(), name='upd_profile'),
+
+    path('objects/', ObjectAPI.as_view(), name='object'),
     path('crt_object', ObjectCreate.as_view(), name='object_create'),
-    path('crt_object/<slug:object_slug>/', ObjectUpdate.as_view(), name='object_update'),
-    path('rem_object/<int:pk>/', ObjectRem.as_view(), name='object_remove'),
+    path('upd_object/<slug:object_slug>/', ObjectUpdate.as_view(), name='object_update'),
+    path('rem_object/<int:pk>/', ObjectRemove.as_view(), name='object_remove'),
 
     path('login/', LoginAPI.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),

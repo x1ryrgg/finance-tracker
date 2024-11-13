@@ -1,23 +1,58 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="{% static 'finance/css/header.css' %}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link type='text/css' href=" {% static "finance/css/styles.css" %} " rel="stylesheet">
     <meta charset="UTF-8">
     <title>{{ title }}</title>
 </head>
 <body>
-    <h2>{{ title }} | {{ user.username }} | <a href="{% url 'logout' %}"> Выйти из аккаунта</a></h2>
 
-    <h2><a href="{% url 'object' %}"> Ваши цели </a></h2>
+<header class="header">
+    <div class="container">
+        <h1 class="logo">{{ title }}</h1>
+        <nav class="nav">
+            <ul>
+                <li> {{ user.username }} </li>
+                <li><a href="{% url 'upd_profile' user.username %}"> Изменить профиль</a></li>
+                <li><a href="{% url 'object' %}"> Ваши цели </a></li>
+                <li><a href="{% url 'logout' %}"> Выйти из аккаунта</a></li>
+                <li>{% if user.is_superuser %}
+            <a href="/admin"> Админ-панель</a>
+        {% endif %}
+                </li>
+            </ul>
+        </nav>
+    </div>
+</header>
 
-    <ul>
         {% for i in serializer %}
-            <li>
-                <div> {{ i.name }} </div>
-                <div> {{ i.all_money }}</div>
-                <div> {{ i.text }}</div>
-            </li>
+                <h4> Имя: {{ user.username }} </h4>
+                <h4> Баланс: {{ i.all_money }} руб. </h4>
+                <h4> Пожелания: {{ i.text }} </h4>
+                <h4> Цели: </h4>
+            <ol>
+
+            {% for item in objective %}
+                <li class="h4"> {{ item.object }} | {{ item.obj_money }} руб.</li>
+                {% empty %}
+                <div> У вас пока что нет целей, <a href="{% url 'object_create' %}"> создать</a>?</div>
+            {% endfor %}
+            </ol>
+
+            {% if  i.image  %}
+            <h4> Фото: <img  class="img-style" src="{{ i.image }}" alt="фото"></h4>
+            {% else %}
+                <div><img class="img-style" src='/media/photo/default.jpg' alt="фото"></div>
+            {% endif %}
+
+            {% empty %}
+            <h1> У вас не создан профиль. <a href="{% url "crt_profile" %}"> Создать. </a></h1>
         {% endfor %}
-    </ul>
+
+
 </body>
 </html>

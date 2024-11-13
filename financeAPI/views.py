@@ -1,7 +1,5 @@
 import logging
 import json
-
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
@@ -21,6 +19,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .forms import *
 from financeAPI.models import *
+from .filters import *
 from .serializers import ObjectSerializer, ProfileSerializer
 
 logger = logging.getLogger(__name__)
@@ -49,12 +48,71 @@ class ProfileAPI(APIView):
     permission_classes = [IsAuthenticated,]
 
     @staticmethod
+    def get(request, ):
+        user = request.user
+        profile = Profile.objects.get(user=user)
+
+        objective = Objective.objects.filter(user=user)
+
+        if profile:
+            serializer = ProfileSerializer(Profile.objects.filter(user=user),many=True, context={'request': request})
+            return render(request, 'financeAPI/index.html', {'user': user, 'serializer': serializer.data,
+                                                     'title': 'Главное меню', "objective": objective, 'form': SearchName(), })
+        else:
+            return redirect('crt_profile')
+
+
+class ProfileCreate(APIView):
+    @staticmethod
     def get(request):
         user = request.user
-        serializer = ProfileSerializer(Profile.objects.filter(name=user), many=True, context={'request': request})
+        form = ProfileForm(request.GET)
+        data = {
+            'user': user,
+            'form': form,
+            'title': "Создание профиля",
+            'info': "Вам нужно создать профиль, чтобы вести свои расчеты.",
+        }
+        return render(request, 'financeAPI/crt_object.html', context=data)
 
-        return render(request, 'financeAPI/index.html', {'user': user, 'serializer': serializer.data,
-                                                         'title': 'Главное меню', })
+    @staticmethod
+    def post(request):
+        user = request.user
+        form = ProfileForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            file = form.save(commit=False)
+            file.user = user
+            file.save()
+            return redirect('profile')
+        else:
+            messages.error(request, gettext_lazy("Ошибка при сохранении цели"))
+            return render(request, 'financeAPI/crt_object.html', context={'user': user, 'form': form})
+
+
+class ProfileUpdate(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, username: str):
+        user = get_object_or_404(User, username=username)
+        return get_object_or_404(Profile, user=user)
+
+    def get(self, request, username: str):
+        obj = self.get_object(username)
+        form = ProfileForm(instance=obj)
+        return render(request, 'financeAPI/crt_object.html', context={'user': request.user, 'form': form,
+                                                                      "object": obj, 'title': 'Изменение профиля'})
+
+    def post(self, request, username: str):
+        obj = self.get_object(username)
+        form = ProfileForm(request.POST, request.FILES, instance=obj)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')
+        return render(request, 'financeAPI/crt_object.html', context={'object': obj,
+                                                                      'form': form, 'user': request.user})
+
+
 
 
 class LoginAPI(APIView):
@@ -97,7 +155,7 @@ class RegisterAPI(APIView):
     def get(request):
         if request.user.is_anonymous:
             form = RegisterForm()
-            return render(request, 'financeAPI/register.html', {'form': form})
+            return render(request, 'financeAPI/register.html', {'form': form, 'title': 'Регистрация аккаунта'})
         logger.info("User %s tried to access registration page" % request.user)
         messages.info(request, gettext_lazy("You are already logged in"))
         return redirect("profile")
@@ -137,17 +195,28 @@ class LogoutView(APIView):
         return redirect('login')
 
 
-class ObjectList(APIView):
+class ObjectAPI(APIView):
     permission_classes = [IsAuthenticated, ]
 
     @staticmethod
     def get(request):
         user = request.user
-        serializer = ObjectSerializer(Objective.objects.filter(user=user), many=True, context={'request': request})
+        objective_filter = ObjectFilter(request.GET, queryset=Objective.objects.filter(user=user))
+        # фильтр помогает избежать несколько строчек кода одной строкой
+        # form = SearchName()
+        #
+        # objectives = Objective.objects.filter(user=user)
+        #
+        # object_filter = request.GET.get('object')
+        # if object_filter:
+        #     objectives = objectives.filter(object__icontains=object_filter)
+
+        serializer = ObjectSerializer(objective_filter.qs, many=True, context={'request': request})
         data = {
             'title': "Ваши цели",
             'user': user,
             'serializer': serializer.data,
+            'filter': objective_filter,
         }
         return render(request, 'financeAPI/object.html', context=data)
 
@@ -206,32 +275,13 @@ class ObjectUpdate(APIView):
                                                                       'form': form, 'user': request.user})
 
 
-class ObjectRemove(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def delete(self, *args, **kwargs):
-        pk = kwargs.get('pk')
-        if not pk:
-            return Response({"error": "Method DELETE not allowed"})
-
-        try:
-            instance = Objective.objects.get(pk=pk)
-            instance.delete()
-        except:
-            return Response({"ERROR": "Object Not Found !"})
-
-        return Response({"post": f"delete post number {str(pk)}"})
-
-
-class ObjectRem(generics.RetrieveDestroyAPIView):
+class ObjectRemove(generics.RetrieveDestroyAPIView):
     permission_classes = [IsAuthenticated, ]
+
     queryset = Objective.objects.all()
     serializer_class = ObjectSerializer
 
     def post(self, request, pk, *args):
         instance = get_object_or_404(Objective, pk=pk)
         instance.delete()
-        return redirect('object')  # Укажите нужный URL для перенаправления
-
-
-
+        return redirect('object')

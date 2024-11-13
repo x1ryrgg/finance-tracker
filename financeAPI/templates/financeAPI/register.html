@@ -1,25 +1,38 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link type='text/css' href=" {% static "finance/css/log_reg.css" %} " rel="stylesheet">
     <meta charset="UTF-8">
     <title>{{ title }}</title>
 </head>
 <body>
-    <h2>{{ title }}</h2>
-
-
 
     {% block content %}
-    <form method="post">
-    {% csrf_token %}
-    <div class="form-error">{{ form.non_field_errors }}</div>
 
-    {% for f in form %}
-        <p ><label class="form-label" for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }}</p>
-        <div class="form-error">{{ f.errors }}</div>
-    {% endfor %}
-    <p><button type="submit">Войти</button></p>
-    </form>
+    <div class="login-container">
+
+        <h2>{{ title }}</h2>
+
+        <div><a href="{% url 'login' %}"> Вернуться в авторизацию </a></div>
+
+        <form method="post">
+            {% csrf_token %}
+            {% for f in form %}
+                <div>
+                <label for="{{ f.id_for_label }}">{{ f.label }}:</label>
+                {{ f }}
+                <div class="form-error">{{ f.errors }}</div>
+                </div>
+            {% endfor %}
+            <p><button type="submit">Зарегестрироваться </button></p>
+        </form>
+
+
+
+    </div>
     {% endblock %}
 
 </body>

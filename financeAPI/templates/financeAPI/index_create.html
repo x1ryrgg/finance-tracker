@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+</head>
+<body>
+    <h2> {{ title }} | {{ user.username }} | <a href="{% url 'profile' %}"> Профиль </a></h2>
+
+    {% block content %}
+    <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for f in form %}
+        <p ><label class="form-control" for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }}</p>
+        <div class="form-error">{{ f.errors }}</div>
+    {% endfor %}
+    <p><button  class="btn btn-primary" type="submit">Сохранить</button></p>
+    </form>
+    {% endblock %}
+</body>
+</html>

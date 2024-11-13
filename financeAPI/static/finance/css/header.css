@@ -1,0 +1,49 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    padding: 20px;
+}
+
+.header {
+    background-color: #007bff;  /* Цвет фона шапки */
+    color: #ffffff;              /* Цвет текста */
+    padding: 15px 0;            /* Вертикальные отступы */
+}
+
+.container {
+    max-width: 1200px;          /* Максимальная ширина */
+    margin: 0 auto;             /* Центрирование контейнера */
+    padding: 0 20px;            /* Горизонтальные отступы */
+    display: flex;              /* Flexbox для выравнивания */
+    justify-content: space-between; /* Распределение элементов */
+    align-items: center;        /* Вертикальное выравнивание */
+}
+
+.logo {
+    font-size: 24px;            /* Размер шрифта для логотипа */
+    font-weight: bold;          /* Жирный шрифт */
+}
+
+.nav ul {
+    list-style: none;           /* Убираем маркеры списка */
+    margin: 0;                 /* Убираем отступы */
+    padding: 0;                /* Убираем внутренние отступы */
+    display: flex;             /* Flexbox для расположения элементов навигации */
+}
+
+.nav li {
+    margin-left: 20px;         /* Отступ между элементами навигации */
+    font-weight: 500;
+}
+
+.nav a {
+    color: #ffffff;            /* Цвет текста ссылок */
+    text-decoration: none;     /* Убираем подчеркивание у ссылок */
+    padding: 10px 15px;       /* Внутренние отступы */
+    transition: background-color 0.3s; /* Плавный переход для фона */
+}
+
+.nav a:hover {
+    background-color: rgba(255, 255, 255, 0.2); /* Эффект наведения ссылок */
+    border-radius: 4px;       /* Закругление углов на наведении */
+}
