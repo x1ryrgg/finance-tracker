@@ -27,9 +27,15 @@
     <h1> {{ detail }}</h1>
     <h1><a class="btn btn-primary" href="{% url 'object_create' %}"> Создать Цель </a></h1>
 
-    <form method="get" action="{% url 'object' %}">
-            {{ filter.form.as_p }}
-            <button type="submit"> Найти </button>
+    <form method="get" action="{% url 'object' %}" class="create-object-form">
+            {% csrf_token %}
+    {% for f in filter.form %}
+        <p class="form-group"><label class="form-control" for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }}</p>
+        {% if errors %}
+        <div class="form-error">{{ f.errors }}</div>
+        {% endif %}
+    {% endfor %}
+            <button class="btn btn-primary" type="submit"> Найти </button>
         </form>
 
     <h2>Ваши цели</h2>
@@ -38,7 +44,7 @@
             <li>
                 <div> Цель: {{ item.object }} </div>
                 <div> Стоимость: {{ item.obj_money }} руб.</div>
-                <div> Дата создания: {{ item.time_create }}</div>
+                <div> Дата создания: {{ item.time_create|date }}</div>
                 <div><a href="{% url 'object_update' item.slug %}"> Изменить</a> | <a href="{% url 'object_remove' item.id %}"> Удалить</a></div>
             </li>
         {% empty %}

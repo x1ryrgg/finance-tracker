@@ -256,12 +256,11 @@ class ObjectUpdate(APIView):
         return get_object_or_404(Objective, slug=object_slug)
 
     def get(self, request, object_slug: str):
-        # Получаем объект по slug
         obj = self.get_object(object_slug)
         form = ObjectForm(instance=obj)
         user = request.user
         return render(request, 'financeAPI/crt_object.html', context={'object': obj,
-                                                                      'form': form, 'user': user})
+                                                                      'form': form, 'user': user, 'title': 'Изменение записи'})
 
     #ПО ФАКТУ ЭТО PUT ЗАПРОС НО НУЖНО ЗАПИСЫВАТЬ КАК POST
     def post(self, request, object_slug: str):
@@ -273,6 +272,7 @@ class ObjectUpdate(APIView):
             return redirect('object')
         return render(request, 'financeAPI/crt_object.html', context={'object': obj,
                                                                       'form': form, 'user': request.user})
+
 
 
 class ObjectRemove(generics.RetrieveDestroyAPIView):
