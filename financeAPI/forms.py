@@ -15,6 +15,9 @@ class LoginForm(AuthenticationForm):
 
 
 class RegisterForm(UserCreationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     username = forms.CharField(label='Имя пользователя', widget=forms.TextInput(), label_suffix='')
     email = forms.EmailField(label='Почта', widget=forms.EmailInput(), label_suffix='')
     password1 = forms.CharField(label='Пароль', widget=forms.PasswordInput(), label_suffix='')
@@ -37,12 +40,6 @@ class ProfileForm(forms.ModelForm):
         return all_money
 
 
-class SearchName(forms.ModelForm):
-    class Meta:
-        model = Objective
-        fields = ('object', )
-
-
 class ObjectForm(forms.ModelForm):
     object = forms.CharField(label='Название цели', widget=forms.TextInput(), label_suffix='')
     obj_money = forms.IntegerField(label='Сумма для цели', widget=forms.NumberInput(), label_suffix='')
@@ -52,9 +49,7 @@ class ObjectForm(forms.ModelForm):
         fields = ('object', 'obj_money')
 
 
-
-
-
-
-
+class CalculateForm(forms.Form):
+    years = forms.IntegerField(label='Количество лет', widget=forms.NumberInput(), label_suffix='')
+    money_in_month = forms.IntegerField(label='Заробатная плата', widget=forms.NumberInput(), label_suffix='')
 

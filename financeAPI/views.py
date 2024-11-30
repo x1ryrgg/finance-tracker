@@ -11,7 +11,7 @@ from rest_framework.generics import ListCreateAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.utils.translation import gettext_lazy
+from django.utils.translation import gettext_lazy as _
 from django.contrib import messages
 from rest_framework import generics
 from django.contrib.auth import login, logout, authenticate
@@ -32,7 +32,6 @@ def index(request):
         return redirect('login')
     return redirect('profile')
 
-
 def show_errors(request, form) -> None:
     errors_json = form.errors.as_json()
     errors_dict = json.loads(errors_json)
@@ -40,7 +39,7 @@ def show_errors(request, form) -> None:
     for field, errors in errors_dict.items():
         for error in errors:
             message = error['message']
-            messages.warning(request, gettext_lazy(message))
+            messages.warning(request, _(message))
             logger.warning("Got an invalid %s form: %s", form.__class__.__name__, message)
 
 
@@ -48,18 +47,17 @@ class ProfileAPI(APIView):
     permission_classes = [IsAuthenticated,]
 
     @staticmethod
-    def get(request, ):
+    def get(request):
         user = request.user
-        profile = Profile.objects.get(user=user)
+        profile = Profile.objects.filter(user=user).prefetch_related('obj').select_related('user')
 
-        objective = Objective.objects.filter(user=user)
-
-        if profile:
-            serializer = ProfileSerializer(Profile.objects.filter(user=user),many=True, context={'request': request})
-            return render(request, 'financeAPI/index.html', {'user': user, 'serializer': serializer.data,
-                                                     'title': 'Главное меню', "objective": objective, 'form': SearchName(), })
-        else:
+        if not profile:
             return redirect('crt_profile')
+
+        serializer = ProfileSerializer(profile, many=True, context={'request': request})
+
+        return render(request, 'financeAPI/index.html', {'user': user, 'serializer': serializer.data,
+                                                     'title': 'Главное меню', })
 
 
 class ProfileCreate(APIView):
@@ -86,7 +84,7 @@ class ProfileCreate(APIView):
             file.save()
             return redirect('profile')
         else:
-            messages.error(request, gettext_lazy("Ошибка при сохранении цели"))
+            messages.error(request, _("Ошибка при сохранении цели"))
             return render(request, 'financeAPI/crt_object.html', context={'user': user, 'form': form})
 
 
@@ -113,8 +111,6 @@ class ProfileUpdate(APIView):
                                                                       'form': form, 'user': request.user})
 
 
-
-
 class LoginAPI(APIView):
     @staticmethod
     def get(request):
@@ -125,8 +121,6 @@ class LoginAPI(APIView):
                 'title': "Авторизация",
             }
             return render(request, 'financeAPI/login.html', context=data)
-        logger.info("User %s tried to login" % request.user)
-        messages.info(request, gettext_lazy(" (ЖопаЖопа) You are already logged in "))
         return redirect("profile")
 
     @staticmethod
@@ -141,7 +135,7 @@ class LoginAPI(APIView):
                 logger.info("User %s is logged in" % user)
                 return redirect('profile')
             else:
-                messages.warning(request, gettext_lazy("username or password incorrect"))
+                messages.warning(request, _("username or password incorrect"))
                 logger.info("User with username %s is not found" % username)
                 return redirect('login')
         show_errors(request, form)
@@ -157,7 +151,7 @@ class RegisterAPI(APIView):
             form = RegisterForm()
             return render(request, 'financeAPI/register.html', {'form': form, 'title': 'Регистрация аккаунта'})
         logger.info("User %s tried to access registration page" % request.user)
-        messages.info(request, gettext_lazy("You are already logged in"))
+        messages.info(request, _("You are already logged in"))
         return redirect("profile")
 
     @staticmethod
@@ -169,16 +163,16 @@ class RegisterAPI(APIView):
             password = form.cleaned_data['password1']
 
             if User.objects.filter(email=email).exists():
-                messages.error(request, gettext_lazy("Email уже существует. Пожалуйста, используйте другой."))
+                messages.error(request, _("Email уже существует. Пожалуйста, используйте другой."))
                 return render(request, 'financeAPI/register.html', {'form': form})
 
             User.objects.create_user(username=username, email=email, password=password)
-            messages.success(request, gettext_lazy("Вы успешно зарегистрированы! Вы можете войти в свой аккаунт."))
+            messages.success(request, _("Вы успешно зарегистрированы! Вы можете войти в свой аккаунт."))
             return redirect('login')
 
         else:
             show_errors(request, form)
-            return render(request, 'financeAPI/register.html', {'form': form})
+            return render(request, 'financeAPI/register.html', {'form': form, 'title': "Регистрация аккаунта"})
 
 class LogoutView(APIView):
     """
@@ -201,7 +195,16 @@ class ObjectAPI(APIView):
     @staticmethod
     def get(request):
         user = request.user
-        objective_filter = ObjectFilter(request.GET, queryset=Objective.objects.filter(user=user))
+        sort_date = request.GET.get('sort', 'asc')
+
+        query = Objective.objects.filter(user=user)
+
+        if sort_date == 'desc':
+            queryset = query.order_by('-obj_money')
+        else:
+            queryset = query.order_by('obj_money')
+
+        objective_filter = ObjectFilter(request.GET, queryset=queryset)
         # фильтр помогает избежать несколько строчек кода одной строкой
         # form = SearchName()
         #
@@ -246,7 +249,7 @@ class ObjectCreate(APIView):
             file.save()
             return redirect('object')
         else:
-            messages.error(request, gettext_lazy("Ошибка при сохранении цели"))
+            messages.error(request, _("Ошибка при сохранении цели"))
             return render(request, 'financeAPI/crt_object.html', context={'form': form,
                                                                           'errors': form.errors})
 class ObjectUpdate(APIView):
@@ -274,14 +277,45 @@ class ObjectUpdate(APIView):
                                                                       'form': form, 'user': request.user})
 
 
+class ObjectRemove(APIView):
+    def get_object(self, object_slug: str):
+        return get_object_or_404(Objective, slug=object_slug)
 
-class ObjectRemove(generics.RetrieveDestroyAPIView):
-    permission_classes = [IsAuthenticated, ]
+    def get(self, request, object_slug):
+        obj = self.get_object(object_slug)
 
-    queryset = Objective.objects.all()
-    serializer_class = ObjectSerializer
+        return render(request, 'financeAPI/dlt_object.html', context={'user': request.user, 'object': obj})
 
-    def post(self, request, pk, *args):
-        instance = get_object_or_404(Objective, pk=pk)
-        instance.delete()
+    def post(self, request, object_slug: str):
+        obj = self.get_object(object_slug)
+        obj.delete()
         return redirect('object')
+
+
+class CalculateInformation(APIView):
+
+    def get(self, request):
+        form = CalculateForm()
+        return render(request, 'financeAPI/calculate.html', context={'form': form,
+                                                                     'result': None,
+                                                                     'money_in_year': None,
+                                                                     'title': 'Расчет сбережений'})
+
+    def post(self, request):
+        form = CalculateForm(request.POST)
+        result, money_in_year = None, None
+        if form.is_valid():
+            years = form.cleaned_data['years']
+            money_in_month = form.cleaned_data['money_in_month']
+
+            result = (money_in_month * 12) * years
+            money_in_year = money_in_month * 12
+
+        return render(request, 'financeAPI/calculate.html', context={'form': form,
+                                                                     'result': result,
+                                                                     'noneyinyear': money_in_year,
+                                                                     'title': 'Расчет сбережений'})
+
+
+
+

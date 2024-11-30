@@ -22,15 +22,17 @@
                 <div>
                 <label for="{{ f.id_for_label }}">{{ f.label }}:</label>
                 {{ f }}
-                <div class="form-error">{{ f.errors }}</div>
                 </div>
+            {% endfor %}
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
             {% endfor %}
             <p><button type="submit">Войти</button></p>
         </form>
 
         <p><a href="{% url 'register' %}">Зарегистрировать аккаунт</a></p>
         <p><a href="{% url 'password_reset' %}">Забыли пароль?</a></p>
-        <p><a href="{% url 'social:begin' 'google-oauth2' %}">Войти с Google</a></p>
+        <p><a class="btn btn-primary" href="{% url 'social:begin' 'google-oauth2' %}"> Google</a></p>
     </div>
     {% endblock %}
 

@@ -1,0 +1,39 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{% static 'finance/css/header.css' %}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link type='text/css' href=" {% static "finance/css/styles.css" %} " rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+</head>
+<body>
+
+<header class="header">
+    <div class="container">
+        <h1 class="logo">{{ title }}</h1>
+        <nav class="nav">
+            <ul>
+                <li> {{ user.username }} </li>
+                <li><a href="{% url 'upd_profile' user.username %}"> Изменить профиль</a></li>
+                <li><a href="{% url 'object' %}"> Ваши цели </a></li>
+                <li><a href="{% url 'logout' %}"> Выйти из аккаунта</a></li>
+                <li>{% if user.is_superuser %}
+                    <a href="/admin"> Админ-панель</a>
+                    {% endif %}
+                </li>
+            </ul>
+        </nav>
+    </div>
+</header>
+    <form method="post">
+        {% csrf_token %}
+        <div> Вы точно хотите удалить запись?</div>
+        <p><button  class="btn btn-primary" type="submit">Удалить запись</button></p>
+    </form>
+
+
+</body>
+</html>

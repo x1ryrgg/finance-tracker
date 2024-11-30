@@ -10,14 +10,17 @@ from .views import *
 urlpatterns = [
     path('', index, name='index'),
     path('social-auth/', include('social_django.urls', namespace='social')),
+
     path('profile/', ProfileAPI.as_view(), name='profile'),
-    path('crt_profile/', ProfileCreate.as_view(), name='crt_profile'),
-    path('upd_profile/<str:username>/', ProfileUpdate.as_view(), name='upd_profile'),
+    path('profile-create/', ProfileCreate.as_view(), name='crt_profile'),
+    path('profile-update/<str:username>/', ProfileUpdate.as_view(), name='upd_profile'),
 
     path('objects/', ObjectAPI.as_view(), name='object'),
-    path('crt_object', ObjectCreate.as_view(), name='object_create'),
-    path('upd_object/<slug:object_slug>/', ObjectUpdate.as_view(), name='object_update'),
-    path('rem_object/<int:pk>/', ObjectRemove.as_view(), name='object_remove'),
+    path('object-create', ObjectCreate.as_view(), name='object_create'),
+    path('object-update/<slug:object_slug>/', ObjectUpdate.as_view(), name='object_update'),
+    path('object-remove/<slug:object_slug>/', ObjectRemove.as_view(), name='object_remove'),
+
+    path('calculate-program/', CalculateInformation.as_view(), name='calculate'),
 
     path('login/', LoginAPI.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),

@@ -9,10 +9,16 @@ class ObjectSerializer(serializers.ModelSerializer):
         read_only_fields = ['time_create', 'time_update']
 
 
+class OBJserializer(serializers.ModelSerializer):
+    class Meta:
+        model = Objective
+        fields = ['obj_money', 'object']
+
 class ProfileSerializer(serializers.ModelSerializer):
+    obj = OBJserializer(many=True, read_only=True)
     class Meta:
         model = Profile
-        fields = "__all__"
+        fields = ['all_money', 'text', 'image', 'obj']
 
 
 

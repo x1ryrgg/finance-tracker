@@ -5,6 +5,7 @@
 <html lang="en">
 <head>
     <link rel="stylesheet" href="{% static 'finance/css/header.css' %}">
+    <link rel="stylesheet" href="{% static 'finance/css/styles.css' %}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <meta charset="UTF-8">
     <title>{{ title }}</title>
@@ -28,9 +29,10 @@
     <h1><a class="btn btn-primary" href="{% url 'object_create' %}"> Создать Цель </a></h1>
 
     <form method="get" action="{% url 'object' %}" class="create-object-form">
-            {% csrf_token %}
+    <button type="submit" name="sort" value="asc" class="btn btn-primary">По возрастанию стоимости</button>
+    <button type="submit" name="sort" value="desc" class="btn btn-primary">По убыванию стоимости</button>
     {% for f in filter.form %}
-        <p class="form-group"><label class="form-control" for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }}</p>
+        <p class="form-group"><label class="form-control" for="{{ f.id_for_label }}">{{f.label}}:</label>{{ f }}</p>
         {% if errors %}
         <div class="form-error">{{ f.errors }}</div>
         {% endif %}
@@ -39,18 +41,22 @@
         </form>
 
     <h2>Ваши цели</h2>
-    <ol>
-        {% for item in serializer %}
-            <li>
-                <div> Цель: {{ item.object }} </div>
-                <div> Стоимость: {{ item.obj_money }} руб.</div>
-                <div> Дата создания: {{ item.time_create|date }}</div>
-                <div><a href="{% url 'object_update' item.slug %}"> Изменить</a> | <a href="{% url 'object_remove' item.id %}"> Удалить</a></div>
-            </li>
-        {% empty %}
-            <h3>Нет целей для отображения.</h3>
-        {% endfor %}
-    </ol>
+
+    <div class="grid">
+    {% for item in serializer %}
+        <div class="item">
+            <div>Цель: {{ item.object }}</div>
+            <div>Стоимость: {{ item.obj_money }} руб.</div>
+            <div>Дата создания: {{ item.time_create|date }}</div>
+            <div>
+                <a href="{% url 'object_update' item.slug %}">Изменить</a> |
+                <a href="{% url 'object_remove' item.slug %}">Удалить</a>
+            </div>
+        </div>
+    {% empty %}
+        <h2>Нет целей для отображения.</h2>
+    {% endfor %}
+    </div>
 
 
 

@@ -4,5 +4,23 @@
        object-fit: cover; /* Сохраняем соотношение сторон при обрезке */
    }
 
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 колонки */
+    gap: 20px; /* Отступы между ячейками */
+    margin: 20px; /* Внешние отступы */
+}
+
+.item {
+    padding: 20px; /* Внутренние отступы */
+    border: 1px solid #ccc; /* Рамка ячейки */
+    border-radius: 5px; /* Скругление углов */
+    text-align: center; /* Выравнивание текста по центру */
+}
+
+h2 {
+    text-align: center; /* Выравнивание текста по центру для отсутствия элементов */
+}
+
 
 

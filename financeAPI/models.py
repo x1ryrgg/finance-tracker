@@ -32,21 +32,11 @@ class Profile(models.Model):
         return f"{self.user} | {self.all_money}"
 
 
-"""
-функция для удаление фото из диска при удалении записи
-"""
-@receiver(post_delete, sender=Profile)
-def auto_delete_file_on_delete(sender, instance, **kwargs):
-    if instance.image:
-        if os.path.isfile(instance.image.path):
-            os.remove(instance.image.path)
-
-
 class Objective(models.Model):
     user = models.ForeignKey("User", on_delete=models.CASCADE, verbose_name="Пользователь")
     object = models.CharField(max_length=100, db_index=True, verbose_name="Название цели")
-    obj_money = models.FloatField(max_length=1000000000000, default=0, verbose_name='Сумма для цели', db_index=True)
-    slug = models.SlugField(max_length=255, unique=True, db_index=True, blank=False)
+    obj_money = models.FloatField(max_length=1000000000000, null=False, db_index=True ,verbose_name='Сумма для цели')
+    slug = models.SlugField(max_length=255, unique=True, blank=False)
     time_create = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
     time_update = models.DateTimeField(auto_now=True, verbose_name='Последнее обновление')
 
