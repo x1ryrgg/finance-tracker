@@ -17,3 +17,9 @@ def date(value):
     if value:
         value = timezone.datetime.fromisoformat(value)
     return value.strftime('%Y-%m-%d') if value else 'нет даты'
+
+
+@register.filter
+def total_sum(value):
+    for keys, values in value.items():
+        return values

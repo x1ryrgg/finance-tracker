@@ -16,7 +16,7 @@ class User(AbstractUser):
 
 class Profile(models.Model):
     user = models.OneToOneField('User', on_delete=models.CASCADE, verbose_name="Ник", related_name="profile")
-    all_money = models.FloatField(max_length=1000000000000, blank=True, default=0, verbose_name="Баланс")
+    all_money = models.FloatField(blank=True, default=0, verbose_name="Баланс")
     text = models.TextField(blank=True, default="Пусто", verbose_name="Пожелания")
     image = models.ImageField(upload_to='photo', verbose_name="Фото", blank=True, null=True)
     time_create = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
@@ -35,7 +35,7 @@ class Profile(models.Model):
 class Objective(models.Model):
     user = models.ForeignKey("User", on_delete=models.CASCADE, verbose_name="Пользователь")
     object = models.CharField(max_length=100, db_index=True, verbose_name="Название цели")
-    obj_money = models.FloatField(max_length=1000000000000, null=False, db_index=True ,verbose_name='Сумма для цели')
+    obj_money = models.IntegerField(null=False, db_index=True ,verbose_name='Сумма для цели')
     slug = models.SlugField(max_length=255, unique=True, blank=False)
     time_create = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
     time_update = models.DateTimeField(auto_now=True, verbose_name='Последнее обновление')

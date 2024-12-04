@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView
 from rest_framework import status
-from rest_framework.decorators import permission_classes
+from rest_framework.decorators import permission_classes, action
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -16,6 +16,7 @@ from django.contrib import messages
 from rest_framework import generics
 from django.contrib.auth import login, logout, authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.db.models import Sum
 
 from .forms import *
 from financeAPI.models import *
@@ -121,7 +122,7 @@ class LoginAPI(APIView):
                 'title': "Авторизация",
             }
             return render(request, 'financeAPI/login.html', context=data)
-        return redirect("profile")
+
 
     @staticmethod
     def post(request):
@@ -195,6 +196,7 @@ class ObjectAPI(APIView):
     @staticmethod
     def get(request):
         user = request.user
+        all_sum = Objective.objects.filter(user=user).aggregate(total=Sum('obj_money'))
         sort_date = request.GET.get('sort', 'asc')
 
         query = Objective.objects.filter(user=user)
@@ -216,6 +218,7 @@ class ObjectAPI(APIView):
 
         serializer = ObjectSerializer(objective_filter.qs, many=True, context={'request': request})
         data = {
+            'all_sum': all_sum,
             'title': "Ваши цели",
             'user': user,
             'serializer': serializer.data,
@@ -317,5 +320,33 @@ class CalculateInformation(APIView):
                                                                      'title': 'Расчет сбережений'})
 
 
+class ObjectList(generics.ListCreateAPIView):
+    queryset = Objective.objects.all()
+    serializer_class = ObjectSerializer
 
 
+class ObjectDetail(generics.ListAPIView):
+    def get_queryset(self):
+        pk = self.kwargs.get('pk')
+
+        if not pk:
+            return Objective.objects.all()
+
+        return Objective.objects.filter(pk=pk)
+
+
+    queryset = Objective.objects.all()
+    serializer_class = ObjectSerializer
+
+
+class ObjectDestroy(generics.RetrieveDestroyAPIView):
+    queryset = Objective.objects.all()
+    serializer_class = ObjectSerializer
+
+    def get_object(self):
+        pk = self.kwargs.get('pk')
+
+        if not pk:
+            return Objective.objects.all()
+
+        return Objective.objects.get(pk=pk)

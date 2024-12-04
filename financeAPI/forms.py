@@ -51,5 +51,5 @@ class ObjectForm(forms.ModelForm):
 
 class CalculateForm(forms.Form):
     years = forms.IntegerField(label='Количество лет', widget=forms.NumberInput(), label_suffix='')
-    money_in_month = forms.IntegerField(label='Заробатная плата', widget=forms.NumberInput(), label_suffix='')
+    money_in_month = forms.IntegerField(label='Заробатная плата в месяц составляет', widget=forms.NumberInput(), label_suffix='')
 
