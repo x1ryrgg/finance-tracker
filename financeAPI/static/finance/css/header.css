@@ -7,7 +7,7 @@ body {
 .header {
     background-color: #007bff;  /* Цвет фона шапки */
     color: #ffffff;              /* Цвет текста */
-    padding: 15px 0;            /* Вертикальные отступы */
+    padding: 15px ;            /* Вертикальные отступы */
 }
 
 .container {

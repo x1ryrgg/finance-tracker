@@ -13,6 +13,9 @@ class User(AbstractUser):
     date_birth = models.DateField(blank=True, null=True, verbose_name="Дата рождения")
     avatar = models.ImageField(blank=True, null=True, upload_to='media/photo', verbose_name="Фотография")
 
+    def __str__(self):
+        return f"{self.username} - {self.pk}"
+
 
 class Profile(models.Model):
     user = models.OneToOneField('User', on_delete=models.CASCADE, verbose_name="Ник", related_name="profile")
@@ -56,6 +59,47 @@ class Objective(models.Model):
         return super(Objective, self).save(*args, **kwargs)
 
 
+class History(models.Model):
+    SPENDING_FOR_WHAT = [
+        ('ТР', 'Траспорт'),
+        ('ТУ', 'Товары и услуги'),
+        ('КР', 'Кафе и рестораны'),
+        ('ТП', 'Тарифы и подписки'),
+        ('ДК', 'Долги и кредиты'),
+        ('ПР', 'Прочее')
+    ]
+
+    TRANSACTION_TYPE = [
+        ('CREDIT', 'Пополнение'),
+        ('DEBIT', 'Списание')
+    ]
+
+    """благордаря этому классу мы можем делать свои фильтры"""
+    class Transactions(models.Manager):
+        def credit(self):
+            return self.filter(transaction_type='CREDIT')
+
+        def debit(self):
+            return self.filter(transaction_type='DEBIT')
+
+    user = models.ForeignKey("User", on_delete=models.CASCADE, verbose_name="Пользователь")
+    spending = models.CharField(max_length=2, choices=SPENDING_FOR_WHAT, default='ПР')
+    hs_money = models.IntegerField(verbose_name='Сумма', db_index=True)
+    comment = models.CharField(max_length=100, blank=True, default='-', verbose_name='Комментарий')
+    time_create = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
+    transaction_type = models.CharField(max_length=6, choices=TRANSACTION_TYPE, default='CREDIT', verbose_name='Тип транзакции')
+
+    objects = Transactions()
+
+    class Mets:
+        ordering = ('-time_create')
+        verbose_name = "История"
+        verbose_name_plural = "Истории"
+
+    def __str__(self):
+        return f"{self.hs_money} | {self.spending}"
+
+
 """
 функция срабатывает каждый раз, когда выполняется сохранение в модели Objective.
 sender - это отправитель, из какой модели идет сохранение.
@@ -71,5 +115,3 @@ def add_objective_to_profile(sender, instance, created, **kwargs):
             profile.obj.add(instance)  # Добавляем только что созданный Objective в obj профиля
         except Profile.DoesNotExist:
             pass
-
-

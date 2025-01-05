@@ -14,11 +14,24 @@ class OBJserializer(serializers.ModelSerializer):
         model = Objective
         fields = ['obj_money', 'object']
 
+
 class ProfileSerializer(serializers.ModelSerializer):
     obj = OBJserializer(many=True, read_only=True)
     class Meta:
         model = Profile
         fields = ['all_money', 'text', 'image', 'obj']
+
+
+class HistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = History
+        fields = '__all__'
+
+
+class TestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = '__all__'
 
 
 

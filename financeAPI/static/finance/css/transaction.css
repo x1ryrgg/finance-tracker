@@ -1,0 +1,32 @@
+.containerr {
+    text-align: center;
+    max-width: 600px; /* Максимальная ширина контейнера */
+    margin: 0 auto; /* Центрирование контейнера */
+    padding: 20px; /* Внутренние отступы */
+    border: 1px solid #ddd; /* Края рамки */
+    border-radius: 10px; /* Скругление углов */
+    background-color: #f9f9f9; /* Цвет фона контейнера */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Тень для эффекта глубины */
+}
+
+.transaction {
+    padding: 15px; /* Внутренние отступы для каждой транзакции */
+    border-radius: 5px; /* Скругление углов */
+    margin: 10px 0; /* Вертикальный отступ между транзакциями */
+    color: white; /* Цвет текста */
+    display: flex; /* Используем flex для более гибкого макета */
+    flex-direction: column; /* Вертикальное расположение элементов */
+}
+
+.credit {
+    background-color: #4CAF50; /* Зеленый для "внесений" */
+}
+
+.debit {
+    background-color: #F44336; /* Красный для "списаний" */
+}
+
+/* Стилизация текста внутри каждой транзакции */
+.transaction div {
+    margin-bottom: 5px; /* Отступы между элементами */
+}

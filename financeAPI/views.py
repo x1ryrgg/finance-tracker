@@ -1,11 +1,13 @@
 import logging
 import json
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.cache import cache_page
 from django.views.generic import ListView
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.decorators import permission_classes, action
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -17,11 +19,13 @@ from rest_framework import generics
 from django.contrib.auth import login, logout, authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db.models import Sum
+from django.contrib import messages
+from django.core.cache import cache
 
 from .forms import *
 from financeAPI.models import *
 from .filters import *
-from .serializers import ObjectSerializer, ProfileSerializer
+from .serializers import ObjectSerializer, ProfileSerializer, HistorySerializer, TestSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +54,13 @@ class ProfileAPI(APIView):
     @staticmethod
     def get(request):
         user = request.user
+        """profile = cache.get('profile') - это кэш брат
+
+        if not profile:
+            profile = Profile.objects.filter(user=user).prefetch_related('obj').select_related('user')
+            cache.set('profile', profile, 10)
+        """
+
         profile = Profile.objects.filter(user=user).prefetch_related('obj').select_related('user')
 
         if not profile:
@@ -133,11 +144,8 @@ class LoginAPI(APIView):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                logger.info("User %s is logged in" % user)
                 return redirect('profile')
             else:
-                messages.warning(request, _("username or password incorrect"))
-                logger.info("User with username %s is not found" % username)
                 return redirect('login')
         show_errors(request, form)
         return redirect('login')
@@ -207,14 +215,6 @@ class ObjectAPI(APIView):
             queryset = query.order_by('obj_money')
 
         objective_filter = ObjectFilter(request.GET, queryset=queryset)
-        # фильтр помогает избежать несколько строчек кода одной строкой
-        # form = SearchName()
-        #
-        # objectives = Objective.objects.filter(user=user)
-        #
-        # object_filter = request.GET.get('object')
-        # if object_filter:
-        #     objectives = objectives.filter(object__icontains=object_filter)
 
         serializer = ObjectSerializer(objective_filter.qs, many=True, context={'request': request})
         data = {
@@ -299,10 +299,7 @@ class CalculateInformation(APIView):
 
     def get(self, request):
         form = CalculateForm()
-        return render(request, 'financeAPI/calculate.html', context={'form': form,
-                                                                     'result': None,
-                                                                     'money_in_year': None,
-                                                                     'title': 'Расчет сбережений'})
+        return render(request, 'financeAPI/calculate.html', context={'form': form, 'title': 'Расчет сбережений'})
 
     def post(self, request):
         form = CalculateForm(request.POST)
@@ -320,12 +317,59 @@ class CalculateInformation(APIView):
                                                                      'title': 'Расчет сбережений'})
 
 
-class ObjectList(generics.ListCreateAPIView):
+class HistoryAPI(APIView):
+    def get(self, request):
+        user = request.user
+        history = History.objects.filter(user=user).select_related('user').order_by('-time_create')
+        sort_transaction = request.GET.get('sort', 'all')
+
+        if sort_transaction == 'all':
+            history = history
+        elif sort_transaction == 'credit':
+            history = history.filter(transaction_type='CREDIT')
+        else:
+            history = history.filter(transaction_type='DEBIT')
+
+        serializer = HistorySerializer(history, many=True, context={'request': request})
+
+        return render(request, 'financeAPI/history.html', context={'serializer': serializer.data, 'user': user,
+                                                                   'title': 'История'})
+
+
+class HistoryPostAPI(APIView):
+    def get(self, request):
+        user = request.user
+        form = HistoryForm(request.GET)
+
+        return render(request, 'financeAPI/historypost.html', context={'form': form, 'user': user,
+                                                                       'title': 'Добавление записи'})
+
+    def post(self, request):
+        user = request.user
+        form = HistoryForm(request.POST)
+        profile = get_object_or_404(Profile, user=user)
+
+        if form.is_valid():
+            transaction_type = form.cleaned_data['transaction_type']
+            hs_money = form.cleaned_data['hs_money']
+            if transaction_type == 'CREDIT':
+                profile.all_money += hs_money
+            elif transaction_type == 'DEBIT':
+                profile.all_money -= hs_money
+
+            profile.save()
+            file = form.save(commit=False)
+            file.user = user
+            file.save()
+            return redirect('history')
+        else:
+            return render(request, 'financeAPI/historypost.html', context={'form': form, 'user': user})
+
+
+class ApiView(viewsets.ModelViewSet):
     queryset = Objective.objects.all()
     serializer_class = ObjectSerializer
 
-
-class ObjectDetail(generics.ListAPIView):
     def get_queryset(self):
         pk = self.kwargs.get('pk')
 
@@ -335,18 +379,8 @@ class ObjectDetail(generics.ListAPIView):
         return Objective.objects.filter(pk=pk)
 
 
-    queryset = Objective.objects.all()
-    serializer_class = ObjectSerializer
-
-
-class ObjectDestroy(generics.RetrieveDestroyAPIView):
-    queryset = Objective.objects.all()
-    serializer_class = ObjectSerializer
-
-    def get_object(self):
-        pk = self.kwargs.get('pk')
-
-        if not pk:
-            return Objective.objects.all()
-
-        return Objective.objects.get(pk=pk)
+class API(APIView):
+    def get(self, request):
+        instance = Profile.objects.all()
+        serializer = TestSerializer(instance=instance, many=True)
+        return Response(serializer.data)

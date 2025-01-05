@@ -1,0 +1,43 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{% static 'finance/css/header.css' %}">
+    <link rel="stylesheet" href="{% static 'finance/css/forms.css' %}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+</head>
+<body>
+
+<header class="header">
+    <div class="container">
+        <h1 class="logo">{{ title }}</h1>
+        <nav class="nav">
+            <ul>
+                <li> {{ user.username }} </li>
+                <li><a href="{% url 'profile' %}"> Профиль</a></li>
+                <li><a href="{% url 'object' %}"> Цели </a></li>
+                <li><a href="{% url 'logout' %}"> Выйти из аккаунта </a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+    <h3> {{ info }}</h3>
+
+    {% block content %}
+    <form class="create-object-form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for f in form %}
+        <p class="form-group"><label class="form-control" for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }}</p>
+        {% if errors %}
+        <div class="form-error">{{ f.errors }}</div>
+        {% endif %}
+    {% endfor %}
+    <p><button  class="btn btn-primary" type="submit">Сохранить</button></p>
+    </form>
+    {% endblock %}
+</body>
+</html>

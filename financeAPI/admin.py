@@ -26,3 +26,12 @@ class ObjectAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'object', 'slug', 'obj_money', 'time_create', 'time_update')
     list_display_links = ('id', 'user')
     ordering = ('id', 'user')
+
+
+@admin.register(History)
+class HistoryAdmin(admin.ModelAdmin):
+    fields = ('user', 'hs_money', 'spending', 'comment')
+
+    list_display = ('user', 'hs_money', 'spending', 'comment', 'time_create')
+    list_display_links = ('user', 'hs_money')
+    ordering = ('id', 'hs_money')

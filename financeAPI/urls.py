@@ -3,19 +3,25 @@ from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, 
 from django.urls import path, include
 from rest_framework import routers
 from rest_framework.reverse import reverse_lazy
+from django.views.decorators.cache import cache_page
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 from .views import *
 
 
+router = routers.DefaultRouter()
+router.register(r'', ApiView, basename='objectsss')
+
 urlpatterns = [
     path('', index, name='index'),
+    path('history/', HistoryAPI.as_view(), name='history'),
+    path('history-create/', HistoryPostAPI.as_view(), name='history-create'),
+
     path('social-auth/', include('social_django.urls', namespace='social')),
 
-    path('obj/', ObjectList.as_view(), name='obj'),
-    path('obj/<int:pk>/', ObjectDetail.as_view(), name='obj_detail'),
-    path('obj/delete/<int:pk>/', ObjectDestroy.as_view(), name='obj_delete'),
+    path('obj/', include(router.urls), name='object'),
+    path('api/', API.as_view(), name='api'),
 
-    path('profile/', ProfileAPI.as_view(), name='profile'),
+    path('profile/', ProfileAPI.as_view(), name='profile'), #cache_page(60)(ProfileAPI.as_view())
     path('profile-create/', ProfileCreate.as_view(), name='crt_profile'),
     path('profile-update/<str:username>/', ProfileUpdate.as_view(), name='upd_profile'),
 

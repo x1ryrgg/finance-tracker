@@ -1,0 +1,6 @@
+Django>=5.1
+djangorestframework>=3.15
+psycopg2-binary>=2.9
+django-extensions>=3.2.0
+djangorestframework-simplejwt>=5.3.0
+djoser>=2.2.0

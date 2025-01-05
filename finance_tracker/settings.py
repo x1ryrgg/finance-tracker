@@ -27,7 +27,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -101,9 +101,9 @@ WSGI_APPLICATION = 'finance_tracker.wsgi.application'
 DATABASES = {
        'default': {
            'ENGINE': 'django.db.backends.postgresql',
-           'NAME': config('DB_NAME'),
-           'USER': config('DB_USER'),
-           'PASSWORD': config('DB_PASSWORD'),
+           'NAME': config('DB_NAME', 'Finance_DB'),
+           'USER': config('DB_USER', 'postgres'),
+           'PASSWORD': config('DB_PASSWORD', '1234'),
            'HOST': config('DB_HOST', default='localhost'),
            'PORT': config('DB_PORT', default='5432'),
        }
@@ -156,8 +156,6 @@ MEDIA_URL = '/media/' # тоже для фото
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'financeAPI.User'
-
-
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
@@ -250,4 +248,15 @@ AUTHENTICATION_BACKENDS = (
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('586465969895-l3904gm6nfhu9ua3mmur9jkgppmsladh.apps.googleusercontent.com')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('pGOCSPX-EeSYqx1eRV9CnlpnktC4-kDN4fw5')
+
+""" CACHE """
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://localhost:6379/",
+        "KEY_PREFIX": "imdb",
+        "TIMEOUT": 60 * 15,  # in seconds: 60 * 15 (15 minutes)
+    }
+}
 

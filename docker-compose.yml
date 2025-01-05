@@ -1,0 +1,22 @@
+
+services:
+  finance_postgres:
+    image: postgres
+    container_name: finance-postgres
+    volumes:
+      - ~/.pg/pg_data/usr:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+  django:
+    image: finance-django
+    container_name: django-server
+    depends_on:
+      - finance_postgres
+    env_file:
+      - .env
+    command: >
+      bash -c "until pg_isready -h finance_postgres -p 5432; do sleep 1; done; 
+      python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"

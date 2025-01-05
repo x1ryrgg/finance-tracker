@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.exceptions import ValidationError
 
-from financeAPI.models import User, Profile, Objective
+from financeAPI.models import User, Profile, Objective, History
 
 
 class LoginForm(AuthenticationForm):
@@ -52,4 +52,12 @@ class ObjectForm(forms.ModelForm):
 class CalculateForm(forms.Form):
     years = forms.IntegerField(label='Количество лет', widget=forms.NumberInput(), label_suffix='')
     money_in_month = forms.IntegerField(label='Заробатная плата в месяц составляет', widget=forms.NumberInput(), label_suffix='')
+
+
+class HistoryForm(forms.ModelForm):
+    class Meta:
+        model = History
+        fields = ('transaction_type', 'hs_money', 'spending', 'comment')
+
+
 
