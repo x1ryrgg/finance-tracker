@@ -32,6 +32,8 @@
     {% for i in serializer %}
         <h4>Имя: {{ user.username }}</h4>
         <h4>Баланс: {{ i.all_money }} руб.</h4>
+        <h4>25% от баланса: {{ i.all_money_test }}</h4>
+        <h4> {{ a }}</h4>
         <h4><a class="button" href="{% url 'history' %}">Посмотреть историю трат</a></h4>
         <h4>Пожелания: {{ i.text }}</h4>
         <h4>Цели:</h4>

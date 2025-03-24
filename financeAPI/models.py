@@ -1,17 +1,24 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Permission
 from django.db import models
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.text import slugify
 from unidecode import unidecode
+from django.utils.translation import gettext_lazy as _
 import os
 
 
 class User(AbstractUser):
     date_birth = models.DateField(blank=True, null=True, verbose_name="Дата рождения")
     avatar = models.ImageField(blank=True, null=True, upload_to='media/photo', verbose_name="Фотография")
+    user_permissions = models.ManyToManyField(
+        Permission,
+        verbose_name='user permissions',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        related_name='financeapi_user_set')
 
     def __str__(self):
         return f"{self.username} - {self.pk}"
@@ -60,14 +67,15 @@ class Objective(models.Model):
 
 
 class History(models.Model):
-    SPENDING_FOR_WHAT = [
-        ('ТР', 'Траспорт'),
-        ('ТУ', 'Товары и услуги'),
-        ('КР', 'Кафе и рестораны'),
-        ('ТП', 'Тарифы и подписки'),
-        ('ДК', 'Долги и кредиты'),
-        ('ПР', 'Прочее')
-    ]
+
+    class Transaction_type(models.TextChoices):
+        TR = "Транспорт", _('Транспорт')
+        TU = 'Товары и услуги', _('Товары и услуги')
+        KR = 'Кафе и рестораны', _('Кафе и рестораны')
+        TP = 'Тарифы и подписки', _('Тарифы и подписки')
+        DK = 'Долги и кредиты', _('Долги и кредиты')
+        PR = 'Прочее', _('Прочее')
+
 
     TRANSACTION_TYPE = [
         ('CREDIT', 'Пополнение'),
@@ -83,7 +91,7 @@ class History(models.Model):
             return self.filter(transaction_type='DEBIT')
 
     user = models.ForeignKey("User", on_delete=models.CASCADE, verbose_name="Пользователь")
-    spending = models.CharField(max_length=2, choices=SPENDING_FOR_WHAT, default='ПР')
+    spending = models.CharField(choices=Transaction_type, default='PR', verbose_name="Тип операции")
     hs_money = models.IntegerField(verbose_name='Сумма', db_index=True)
     comment = models.CharField(max_length=100, blank=True, default='-', verbose_name='Комментарий')
     time_create = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')

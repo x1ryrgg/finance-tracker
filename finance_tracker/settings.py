@@ -13,21 +13,26 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from decouple import config
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+load_dotenv()
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+AUTH_USER_MODEL = 'financeAPI.User'
+
 ALLOWED_HOSTS = ['*']
+
+SITE_ID = 7
 
 
 # Application definition
@@ -99,13 +104,13 @@ WSGI_APPLICATION = 'finance_tracker.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-       'default': {
-           'ENGINE': 'django.db.backends.postgresql',
-           'NAME': config('DB_NAME', 'Finance_DB'),
-           'USER': config('DB_USER', 'postgres'),
-           'PASSWORD': config('DB_PASSWORD', '1234'),
-           'HOST': config('DB_HOST', default='localhost'),
-           'PORT': config('DB_PORT', default='5432'),
+    'default': {
+           'ENGINE': 'django.db.backends.postgresql_psycopg2',
+           'NAME': os.getenv('DB_NAME', 'Finance_DB'),
+           'USER': os.getenv('DB_USER', 'postgres'),
+           'PASSWORD': os.getenv('DB_PASSWORD', '1234'),
+           'HOST': os.getenv('DB_HOST', 'db'), # db for docker
+           'PORT': os.getenv('DB_PORT', '5432'),
        }
     }
 
@@ -155,8 +160,6 @@ MEDIA_URL = '/media/' # тоже для фото
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'financeAPI.User'
-
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
@@ -193,7 +196,7 @@ SIMPLE_JWT = {
     "JWK_URL": None,
     "LEEWAY": 0,
 
-    "AUTH_HEADER_TYPES": ("Jtoken",),
+    "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
     "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "user_id",
@@ -223,8 +226,8 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend" # для отпр�
 
 EMAIL_HOST = 'smtp.mail.ru'
 EMAIL_PORT = '2525'
-EMAIL_HOST_USER = 'zhdamarov-vladimir@mail.ru'
-EMAIL_HOST_PASSWORD = "q07a0PgseQLzZ2RpRG8P"
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD_USER')
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
@@ -254,9 +257,11 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('pGOCSPX-EeSYqx1eRV9CnlpnktC4-kDN4f
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://localhost:6379/",
+        "LOCATION": "redis://redis:6379/",
         "KEY_PREFIX": "imdb",
         "TIMEOUT": 60 * 15,  # in seconds: 60 * 15 (15 minutes)
     }
 }
+
+
 

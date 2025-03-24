@@ -34,7 +34,7 @@ urlpatterns = [
 
     path('login/', LoginAPI.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
-    path('register/', RegisterAPI.as_view(), name='register'),
+    path('signup/', RegisterAPI.as_view(), name='register'),
     path('api/auth_user/', include('rest_framework.urls')),
 
     path('passsword-reset', PasswordResetView.as_view(template_name='reset_password/password_reset_form.html',

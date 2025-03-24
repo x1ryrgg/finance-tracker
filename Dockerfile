@@ -1,31 +1,25 @@
 FROM python:3.12
 
-SHELL ["/bin/bash", "-c"]
+WORKDIR /app
 
-# set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+# Install system dependencies first
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends postgresql-client && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN python -m pip install Pillow
+COPY . .
 
-RUN apt-get update && apt-get install -y postgresql-client
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV DJANGO_SETTINGS_MODULE=finance_tracker.settings
 
-RUN apt update && apt -qy install gcc libjpeg-dev libxslt-dev \
-    libpq-dev libmariadb-dev libmariadb-dev-compat gettext cron openssh-client flake8 locales vim
-
-RUN useradd -rms /bin/bash usr && chmod 777 /opt /run
-
-WORKDIR /usr
-
-RUN mkdir /usr/static && mkdir /usr/media && chown -R usr:usr /usr && chmod 755 /usr
-
-COPY --chown=usr:usr . .
-
-RUN pip install -r requirements.txt
-
-USER usr
-
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD python manage.py makemigrations \
+    && python manage.py migrate \
+    && python manage.py createcachetable \
+    && python manage.py runserver 0.0.0.0:8000
 

@@ -3,6 +3,7 @@ import json
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.sites.models import Site
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.cache import cache_page
@@ -54,22 +55,23 @@ class ProfileAPI(APIView):
     @staticmethod
     def get(request):
         user = request.user
-        """profile = cache.get('profile') - это кэш брат
+        profile = cache.get('profile')
 
         if not profile:
             profile = Profile.objects.filter(user=user).prefetch_related('obj').select_related('user')
             cache.set('profile', profile, 10)
-        """
 
-        profile = Profile.objects.filter(user=user).prefetch_related('obj').select_related('user')
+
+        # profile = Profile.objects.filter(user=user).prefetch_related('obj').select_related('user')
 
         if not profile:
             return redirect('crt_profile')
 
         serializer = ProfileSerializer(profile, many=True, context={'request': request})
 
-        return render(request, 'financeAPI/index.html', {'user': user, 'serializer': serializer.data,
-                                                     'title': 'Главное меню', })
+        return render(request, 'financeAPI/index.html', {'user': user,
+                                                         'serializer': serializer.data,
+                                                         'title': 'Главное меню', })
 
 
 class ProfileCreate(APIView):
@@ -137,16 +139,15 @@ class LoginAPI(APIView):
 
     @staticmethod
     def post(request):
-        form = LoginForm(data=request.data)
-        if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('profile')
-            else:
-                return redirect('login')
+        if request.user.is_anonymous:
+            form = LoginForm(data=request.POST)
+            if form.is_valid():
+                username = form.cleaned_data['username']
+                password = form.cleaned_data['password']
+                user = authenticate(request, username=username, password=password)
+                if user is not None:
+                    login(request, user)
+                    return redirect('profile')
         show_errors(request, form)
         return redirect('login')
 

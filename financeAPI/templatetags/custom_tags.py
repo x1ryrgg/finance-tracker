@@ -22,4 +22,6 @@ def date(value):
 @register.filter
 def total_sum(value):
     for keys, values in value.items():
+        if values is None:
+            return 0
         return values
